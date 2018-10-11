@@ -1,3 +1,17 @@
+#installing packages
+
+install.packages("dplyr")
+install.packages("ggplot2")
+install.packages("lattice")
+install.packages("caret")
+install.packages("scatterplot3d")
+install.packages("tidyr")
+install.packages("ISLR")
+install.packages("caTools")
+install.packages("lubridate")
+install.packages("plotly")
+install.packages ("e1071")
+
 #libraries
 
 library("dplyr")
@@ -16,32 +30,20 @@ library ("e1071")
 
 training <-read.csv("/Users/Aynaz/Documents/Berlin/ubiqum/R/002- Module 3/Module 3/UJIndoorLoc/trainingData.csv", na.strings = "?")
 validation <- read.csv("/Users/Aynaz/Documents/Berlin/ubiqum/R/002- Module 3/Module 3/UJIndoorLoc/validationData.csv", na.strings = "?")
-valid <- read.csv("/Users/Aynaz/Documents/Berlin/ubiqum/R/002- Module 3/Module 3/UJIndoorLoc/validationData.csv", na.strings = "?")
 
 ####change the type of attributes
 #training dataset
 
 training$FLOOR <- as.factor(training$FLOOR)
 training$BUILDINGID <- as.factor(training$BUILDINGID)
-training$SPACEID <- factor(training$SPACEID)
-training$RELATIVEPOSITION<- factor(training$RELATIVEPOSITION)
+training$SPACEID <- as.factor(training$SPACEID)
+training$RELATIVEPOSITION<- as.factor(training$RELATIVEPOSITION)
 training$USERID <- as.factor(training$USERID)
 training$PHONEID <- as.factor(training$PHONEID)
 
 #change time format
 
 training$TIMESTAMP <- as.POSIXct(training$TIMESTAMP, origin="1970-01-01")
-
-# Creat UniqueID 
-
-training$UniqueID <- training %>%
-  group_indices(BUILDINGID, FLOOR, SPACEID)
-training$UniqueID <- as.factor(training$UniqueID)
-
-
-#validation dataset
-
-validation$BUILDINGID <- as.factor(validation$BUILDINGID)
 
 #creating dataframe
 
@@ -60,12 +62,12 @@ any(is.na(FLOORPREDICTION))
 colSums (is.na(training_norm_FLOOR))
 sum(is.na(training))
 
-#explore -30 till 0 
+#explore WAPs with signal in range (-30-0)
 
 training$range30to0 <-apply(training_df,1,function(x)sum(x>=-30 & x<=0))
 training$LOg30to0 <- apply(training_df,1,function(row) "TRUE" %in% row)
 
-#eliminating rows that include -30 to 0
+#eliminating rows with signal in range (-30-0)
 
 training <- training %>% filter(range30to0 ==0 )
 
@@ -74,8 +76,7 @@ training <- training %>% filter(range30to0 ==0 )
 training <- training[ - as.numeric(which(apply(training, 2, var) == 0))]
 
 ####creating new data sets
-
-#changing 100 to -105
+#changing 100 to -105 to reduce the range
 
 training2 <- training
 training2$LONGITUDE <- NULL
@@ -86,23 +87,21 @@ training3 <-training2[,1:465]
 
 training3[,1:464] <- data.frame(sapply(training3, function(x)ifelse(x ==100,-105,x )))
 table(training3$BUILDINGID)
-training3 $ BUILDINGID <- as.factor(training3 $ BUILDINGID)
 training4 <- training3[sample(nrow(training3), 3000),]
 training4$BUILDINGID <- as.factor(training4$BUILDINGID)
 str(training4[,450:465])
-table(training4$WAP001)
 
-#### Preparing validation set
-
+#### Preparing validation data set
 # matching validation attributes with training attributes
+                                       
 validation <- validation[, which(names(validation) %in% names(training4))]
 str(validation[,450:465])
 
-#check and remove var=0 in validation set
+#check and remove var=0 in validation set (WAPs which have no signals
+                                
 validation <- validation[ - as.numeric(which(apply(validation, 2, var) == 0))]
 validation2<- validation
 table(validation2$BUILDINGID)
-
 
 #changing 100 to -105 in validation set
 
@@ -154,10 +153,6 @@ training6$LATITUDE <-NULL
 training6$ LONGITUDE <-NULL
 training6$BUILDINGID <- as.factor(training6$BUILDINGID)
 training6$FLOOR<-as.factor(training6$FLOOR)
-table(training6$WAP001)
-table(training7$WAP001)
-str(training6[,1])
-str(training7[,1:5])
 training6[,1:464] <- data.frame(sapply(training6, function(x)ifelse(x ==100,-105,x )))
 training6 $ BUILDINGID <- as.factor(training6 $ BUILDINGID)
 training6 $ FLOOR <- as.factor(training6$FLOOR)
@@ -230,9 +225,7 @@ postResample(RFFLOORvalidation,validation4$FLOOR)
 str(RFFLOORvalidation )
 table(RFFLOORvalidation )
 
-#######################################################################
 #### PREDICTING BUILDINGID AND FLOOR WITH NORMALISED DATASETS###
-
 ###normalise WAPs
 
 training_norm <-training3
