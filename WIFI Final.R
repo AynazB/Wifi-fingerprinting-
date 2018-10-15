@@ -28,8 +28,8 @@ library ("e1071")
 
 #import dataset
 
-training <-read.csv("/Users/Aynaz/Documents/Berlin/ubiqum/R/002- Module 3/Module 3/UJIndoorLoc/trainingData.csv", na.strings = "?")
-validation <- read.csv("/Users/Aynaz/Documents/Berlin/ubiqum/R/002- Module 3/Module 3/UJIndoorLoc/validationData.csv", na.strings = "?")
+training <-read.csv("/Users/Aynaz/.../trainingData.csv", na.strings = "?")
+validation <- read.csv("/Users/Aynaz/.../validationData.csv", na.strings = "?")
 
 ####change the type of attributes
 #training dataset
